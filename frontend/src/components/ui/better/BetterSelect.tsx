@@ -1,4 +1,9 @@
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react";
 
 export interface BetterSelectOption {
   value: string;
@@ -41,7 +46,9 @@ export function BetterSelect({
                      disabled:opacity-50 disabled:cursor-not-allowed
                      transition-colors"
         >
-          <span className={`block truncate ${!selectedOption ? "text-brand-400 dark:text-brand-500" : ""}`}>
+          <span
+            className={`block truncate ${!selectedOption ? "text-brand-400 dark:text-brand-500" : ""}`}
+          >
             {displayValue}
           </span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
@@ -52,7 +59,7 @@ export function BetterSelect({
         {/* Options Dropdown */}
         <ListboxOptions
           anchor="bottom start"
-          className="absolute z-50 mt-1 max-h-60 w-[var(--button-width)] overflow-auto
+          className="absolute z-[9999] mt-1 max-h-60 w-[var(--button-width)] overflow-auto
                      bg-white dark:bg-brand-800
                      border border-brand-300 dark:border-brand-600
                      rounded-md shadow-lg
@@ -64,14 +71,18 @@ export function BetterSelect({
             <ListboxOption
               key={option.value}
               value={option.value}
-              className={
-                ({ focus, selected }: { focus: boolean; selected: boolean }) =>
-                  `relative cursor-pointer select-none py-2 pl-10 pr-4
+              className={({
+                focus,
+                selected,
+              }: {
+                focus: boolean;
+                selected: boolean;
+              }) =>
+                `relative cursor-pointer select-none py-2 pl-10 pr-4
                    ${focus ? "bg-neutral-100 dark:bg-brand-700" : ""}
                    ${selected ? "bg-neutral-50 dark:bg-brand-750" : ""}
                    text-brand-900 dark:text-white
-                   transition-colors`
-              }
+                   transition-colors`}
             >
               {({ selected }: { selected: boolean }) => (
                 <>
@@ -80,7 +91,9 @@ export function BetterSelect({
                       <div className="i-mdi-check h-5 w-5" />
                     </span>
                   )}
-                  <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                  <span
+                    className={`block truncate ${selected ? "font-medium" : "font-normal"}`}
+                  >
                     {option.label}
                   </span>
                 </>
