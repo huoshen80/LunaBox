@@ -35,7 +35,7 @@ const (
 	bangumiOAuthTokenURL       = "https://bgm.tv/oauth/access_token"
 	bangumiCurrentUserURL      = "https://api.bgm.tv/v0/me"
 	bangumiCollectionAPIFormat = "https://api.bgm.tv/v0/users/-/collections/%s"
-	bangumiUserAgent           = "LunaBox/1.0"
+	bangumiUserAgent           = "Saramanda9988/LunaBox/1.6.3 (desktop) (https://github.com/Saramanda9988/LunaBox)"
 
 	bangumiOAuthClientIDEnv     = "LUNABOX_BANGUMI_CLIENT_ID"
 	bangumiOAuthClientSecretEnv = "LUNABOX_BANGUMI_CLIENT_SECRET"
