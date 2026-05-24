@@ -249,7 +249,6 @@ function LibraryPage() {
       const requestId = ++requestIdRef.current;
       if (mode === "replace") {
         setLoading(true);
-        setGames([]);
         setHasMore(false);
       }
       else {
@@ -472,7 +471,7 @@ function LibraryPage() {
     <div
       ref={pageRef}
       data-scroll-restoration-id={LIBRARY_SCROLL_RESTORATION_ID}
-      className={`h-full w-full overflow-y-auto p-8 transition-opacity duration-300 ${loading && games.length > 0 ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+      className="h-full w-full overflow-y-auto p-8"
     >
       <div className="mx-auto max-w-8xl space-y-6">
         <div className="flex flex-col items-left justify-between">
@@ -676,23 +675,37 @@ function LibraryPage() {
             </div>
           </div>
         ) : (
-          <>
-            <VirtualGameGrid
-              games={games}
-              scrollRestorationId={LIBRARY_SCROLL_RESTORATION_ID}
-              searchQuery={debouncedSearchQuery}
-              selectionMode={batchMode}
-              selectedGameIds={selectedGameIdSet}
-              onSelectChange={setGameSelection}
-              onNearEnd={fetchNextPage}
-            />
+          <div className="relative">
+            <div
+              className={`transition-opacity duration-200 ${
+                loading ? "pointer-events-none opacity-60" : "opacity-100"
+              }`}
+            >
+              <VirtualGameGrid
+                games={games}
+                scrollRestorationId={LIBRARY_SCROLL_RESTORATION_ID}
+                searchQuery={debouncedSearchQuery}
+                selectionMode={batchMode}
+                selectedGameIds={selectedGameIdSet}
+                onSelectChange={setGameSelection}
+                onNearEnd={fetchNextPage}
+              />
+            </div>
+            {loading && (
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center py-3 text-sm text-brand-600 dark:text-brand-300">
+                <div className="glass-panel flex items-center rounded-full border border-brand-200/70 bg-white/85 px-3 py-1.5 shadow-sm backdrop-blur dark:border-brand-700/70 dark:bg-brand-900/75">
+                  <div className="i-mdi-loading animate-spin mr-2" />
+                  {t("common.loading", "加载中...")}
+                </div>
+              </div>
+            )}
             {loadingMore && (
               <div className="flex justify-center py-3 text-sm text-brand-500 dark:text-brand-400">
                 <div className="i-mdi-loading animate-spin mr-2" />
                 {t("common.loading", "加载中...")}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 

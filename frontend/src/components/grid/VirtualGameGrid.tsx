@@ -7,7 +7,8 @@ import { GameCard } from "../card/GameCard";
 
 const CARD_MIN_WIDTH = 140;
 const GRID_GAP = 12;
-const ROW_HEIGHT = 220;
+const CARD_IMAGE_ASPECT_RATIO = 3.6 / 3;
+const CARD_META_HEIGHT = 56;
 
 interface VirtualGameGridProps {
   games: models.Game[];
@@ -55,17 +56,28 @@ export function VirtualGameGrid({
     1,
     Math.floor((containerWidth + GRID_GAP) / (CARD_MIN_WIDTH + GRID_GAP)),
   );
+  const cardWidth
+    = columnCount > 0
+      ? (containerWidth - GRID_GAP * (columnCount - 1)) / columnCount
+      : CARD_MIN_WIDTH;
+  const rowHeight = Math.ceil(
+    cardWidth * CARD_IMAGE_ASPECT_RATIO + CARD_META_HEIGHT,
+  );
   const rowCount = Math.ceil(games.length / columnCount);
 
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollElement,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: () => rowHeight,
     initialOffset: scrollEntry?.scrollY,
     overscan: 4,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
+
+  useEffect(() => {
+    virtualizer.measure();
+  }, [columnCount, rowHeight, virtualizer]);
 
   useEffect(() => {
     const last = virtualItems.at(-1);

@@ -181,7 +181,6 @@ function CategoryDetailPage() {
       const requestId = ++requestIdRef.current;
       if (mode === "replace") {
         setLoading(true);
-        setGames([]);
         setHasMore(false);
       }
       else {
@@ -421,7 +420,7 @@ function CategoryDetailPage() {
     <div
       ref={pageRef}
       data-scroll-restoration-id={scrollRestorationId}
-      className={`h-full w-full overflow-y-auto p-8 transition-opacity duration-300 ${loading ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+      className="h-full w-full overflow-y-auto p-8"
     >
       {/* Back Button */}
       <button
@@ -520,37 +519,51 @@ function CategoryDetailPage() {
 
       <div className="mt-6">
         {games.length > 0 ? (
-          <>
-            <VirtualGameGrid
-              games={games}
-              scrollRestorationId={scrollRestorationId}
-              searchQuery={debouncedSearchQuery}
-              selectionMode={batchMode}
-              selectedGameIds={selectedGameIdSet}
-              onSelectChange={setGameSelection}
-              onNearEnd={loadNextGames}
-              renderOverlay={game =>
-                !batchMode && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveGame(game.id);
-                    }}
-                    className="absolute top-2 right-2 p-1 bg-error-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-error-600"
-                    title={t("category.removeFromCategory")}
-                  >
-                    <div className="i-mdi-close text-sm" />
-                  </button>
-                )}
-            />
+          <div className="relative">
+            <div
+              className={`transition-opacity duration-200 ${
+                loading ? "pointer-events-none opacity-60" : "opacity-100"
+              }`}
+            >
+              <VirtualGameGrid
+                games={games}
+                scrollRestorationId={scrollRestorationId}
+                searchQuery={debouncedSearchQuery}
+                selectionMode={batchMode}
+                selectedGameIds={selectedGameIdSet}
+                onSelectChange={setGameSelection}
+                onNearEnd={loadNextGames}
+                renderOverlay={game =>
+                  !batchMode && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveGame(game.id);
+                      }}
+                      className="absolute top-2 right-2 p-1 bg-error-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-error-600"
+                      title={t("category.removeFromCategory")}
+                    >
+                      <div className="i-mdi-close text-sm" />
+                    </button>
+                  )}
+              />
+            </div>
+            {loading && (
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center py-3 text-sm text-brand-600 dark:text-brand-300">
+                <div className="glass-panel flex items-center rounded-full border border-brand-200/70 bg-white/85 px-3 py-1.5 shadow-sm backdrop-blur dark:border-brand-700/70 dark:bg-brand-900/75">
+                  <div className="i-mdi-loading animate-spin mr-2" />
+                  {t("common.loading", "加载中...")}
+                </div>
+              </div>
+            )}
             {loadingMore && (
               <div className="flex justify-center py-3 text-sm text-brand-500 dark:text-brand-400">
                 <div className="i-mdi-loading animate-spin mr-2" />
                 {t("common.loading", "加载中...")}
               </div>
             )}
-          </>
+          </div>
         ) : total > 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-brand-500 dark:text-brand-400">
             <div className="i-mdi-magnify text-6xl mb-4" />

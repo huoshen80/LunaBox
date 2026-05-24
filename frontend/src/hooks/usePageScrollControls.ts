@@ -16,6 +16,8 @@ type UsePageScrollControlsOptions = {
   toolbarRef: RefObject<HTMLElement>;
 };
 
+const SCROLL_TOP_BUTTON_THRESHOLD = 120;
+
 export function usePageScrollControls({
   anchorRef,
   enabled,
@@ -39,22 +41,43 @@ export function usePageScrollControls({
   }, [anchorRef, enabled, toolbarRef]);
 
   useEffect(() => {
-    if (!enabled || !toolbarRef.current) {
+    if (!enabled) {
       return;
     }
 
-    const toolbar = toolbarRef.current;
-    const root = scrollElementRef.current;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowScrollTop(!entry.isIntersecting && getScrollTop(root) > 0);
-      },
-      { root, threshold: 0 },
-    );
+    const scrollElement = scrollElementRef.current;
+    if (!scrollElement) {
+      return;
+    }
 
-    observer.observe(toolbar);
-    return () => observer.disconnect();
-  }, [enabled, toolbarRef]);
+    let animationFrame = 0;
+    const updateVisibility = () => {
+      if (animationFrame) {
+        return;
+      }
+
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = 0;
+        setShowScrollTop(
+          getScrollTop(scrollElement) > SCROLL_TOP_BUTTON_THRESHOLD,
+        );
+      });
+    };
+
+    const restoreTimer = window.setTimeout(updateVisibility, 0);
+    updateVisibility();
+    scrollElement.addEventListener("scroll", updateVisibility, {
+      passive: true,
+    });
+
+    return () => {
+      window.clearTimeout(restoreTimer);
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+      scrollElement.removeEventListener("scroll", updateVisibility);
+    };
+  }, [enabled]);
 
   const handleScrollToTop = useCallback(() => {
     scrollToTop(scrollElementRef.current);
