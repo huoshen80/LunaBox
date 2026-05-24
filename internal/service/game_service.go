@@ -172,9 +172,9 @@ func (s *GameService) addGameWithTags(game models.Game, tags []metadata.TagItem,
 
 	query := `INSERT INTO games (
 		id, name, cover_url, company, summary, rating, release_date, path, 
-		source_type, cached_at, source_id, created_at, updated_at,
+		save_path, process_name, source_type, cached_at, source_id, created_at, updated_at,
 		use_locale_emulator, use_magpie
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	_, err := s.db.ExecContext(s.ctx, query,
 		game.ID,
@@ -185,6 +185,8 @@ func (s *GameService) addGameWithTags(game models.Game, tags []metadata.TagItem,
 		game.Rating,
 		game.ReleaseDate,
 		game.Path,
+		game.SavePath,
+		game.ProcessName,
 		string(game.SourceType),
 		game.CachedAt,
 		game.SourceID,

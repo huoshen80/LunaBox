@@ -6,6 +6,7 @@ import (
 	"lunabox/internal/applog"
 	"lunabox/internal/common/vo"
 	"lunabox/internal/models"
+	"lunabox/internal/utils/metadata"
 	"strings"
 	"time"
 )
@@ -138,6 +139,33 @@ func addPlaySessions(deps Dependencies, logPrefix string, result *ImportResult, 
 
 	applog.LogInfof(deps.Ctx, "%s: imported %d play sessions for game %s", logPrefix, len(sessions), gameName)
 	result.SessionsImported += len(sessions)
+}
+
+func tagsFromNames(names []string) []metadata.TagItem {
+	if len(names) == 0 {
+		return nil
+	}
+
+	tags := make([]metadata.TagItem, 0, len(names))
+	seen := make(map[string]struct{}, len(names))
+	for _, raw := range names {
+		name := strings.TrimSpace(raw)
+		if name == "" {
+			continue
+		}
+		key := strings.ToLower(name)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		tags = append(tags, metadata.TagItem{
+			Name:      name,
+			Source:    "user",
+			Weight:    1.0,
+			IsSpoiler: false,
+		})
+	}
+	return tags
 }
 
 func updateExistingIndexes(existingNames map[string]string, existingPaths map[string]string, game models.Game, gameName string, exePath string) {

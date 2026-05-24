@@ -106,6 +106,7 @@ func (v *VniteImporter) Import(vniteDir string, skipNoPath bool) (ImportResult, 
 		if err := addImportedGame(v.deps, vo.GameMetadataFromWebVO{
 			Source: game.SourceType,
 			Game:   game,
+			Tags:   tagsFromNames(gameDoc.Metadata.Tags),
 		}); err != nil {
 			applog.LogErrorf(v.deps.Ctx, "ImportFromVnite: failed to add game %s: %v", gameName, err)
 			result.Failed++
@@ -135,17 +136,20 @@ func collectVniteIDs(data *vnite.ExportData) map[string]bool {
 func (v *VniteImporter) convertToGame(gameDoc vnite.GameDoc, localDoc vnite.GameLocalDoc) (models.Game, []models.PlaySession) {
 	gameID := uuid.New().String()
 	game := models.Game{
-		ID:         gameID,
-		Name:       pickVniteName(gameDoc),
-		Company:    pickVniteDeveloper(gameDoc),
-		Summary:    gameDoc.Metadata.Description,
-		Path:       pickVniteGamePath(localDoc),
-		SavePath:   pickVniteSavePath(localDoc),
-		SourceType: mapVniteSourceType(gameDoc),
-		SourceID:   pickVniteSourceID(gameDoc),
-		CreatedAt:  parseVniteTimeOrNow(gameDoc.Record.AddDate),
-		CachedAt:   time.Now(),
-		UseMagpie:  localDoc.Launcher.UseMagpie,
+		ID:                gameID,
+		Name:              pickVniteName(gameDoc),
+		Company:           pickVniteDeveloper(gameDoc),
+		Summary:           gameDoc.Metadata.Description,
+		ReleaseDate:       strings.TrimSpace(gameDoc.Metadata.ReleaseDate),
+		Path:              pickVniteGamePath(localDoc),
+		SavePath:          pickVniteSavePath(localDoc),
+		ProcessName:       pickVniteProcessName(localDoc),
+		SourceType:        mapVniteSourceType(gameDoc),
+		SourceID:          pickVniteSourceID(gameDoc),
+		CreatedAt:         parseVniteTimeOrNow(gameDoc.Record.AddDate),
+		CachedAt:          time.Now(),
+		UseLocaleEmulator: pickVniteUseLocaleEmulator(localDoc),
+		UseMagpie:         localDoc.Launcher.UseMagpie,
 	}
 
 	sessions := parseVniteTimers(gameID, gameDoc.Record.Timers)
@@ -212,17 +216,33 @@ func pickVniteDeveloper(gameDoc vnite.GameDoc) string {
 }
 
 func pickVniteGamePath(localDoc vnite.GameLocalDoc) string {
-	if localDoc.Path.GamePath != "" {
-		return localDoc.Path.GamePath
+	if strings.EqualFold(strings.TrimSpace(localDoc.Launcher.Mode), "file") {
+		if path := strings.TrimSpace(localDoc.Launcher.FileConfig.Path); path != "" {
+			return path
+		}
 	}
-	return localDoc.Launcher.FileConfig.Path
+	return strings.TrimSpace(localDoc.Path.GamePath)
 }
 
 func pickVniteSavePath(localDoc vnite.GameLocalDoc) string {
 	if len(localDoc.Path.SavePaths) > 0 {
-		return localDoc.Path.SavePaths[0]
+		return strings.TrimSpace(localDoc.Path.SavePaths[0])
 	}
 	return ""
+}
+
+func pickVniteProcessName(localDoc vnite.GameLocalDoc) string {
+	if !strings.EqualFold(strings.TrimSpace(localDoc.Launcher.Mode), "file") {
+		return ""
+	}
+	if !strings.EqualFold(strings.TrimSpace(localDoc.Launcher.FileConfig.MonitorMode), "process") {
+		return ""
+	}
+	return strings.TrimSpace(localDoc.Launcher.FileConfig.MonitorPath)
+}
+
+func pickVniteUseLocaleEmulator(localDoc vnite.GameLocalDoc) bool {
+	return localDoc.Launcher.UseLocaleEmulator || localDoc.Launcher.RunInLocaleEmulator
 }
 
 func pickVniteSourceID(gameDoc vnite.GameDoc) string {

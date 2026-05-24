@@ -50,9 +50,11 @@ type AttachmentMeta struct {
 type GameMetadata struct {
 	Name         string   `json:"name"`
 	OriginalName string   `json:"originalName"`
+	ReleaseDate  string   `json:"releaseDate"`
 	Description  string   `json:"description"`
 	Developers   []string `json:"developers"`
 	Publishers   []string `json:"publishers"`
+	Tags         []string `json:"tags"`
 	SteamID      string   `json:"steamId"`
 	VNDBID       string   `json:"vndbId"`
 	YmgalID      string   `json:"ymgalId"`
@@ -85,15 +87,20 @@ type GameLocalPath struct {
 }
 
 type GameLauncher struct {
-	Mode         string          `json:"mode"`
-	FileConfig   GameFileConfig  `json:"fileConfig"`
-	URLConfig    json.RawMessage `json:"urlConfig"`
-	ScriptConfig json.RawMessage `json:"scriptConfig"`
-	UseMagpie    bool            `json:"useMagpie"`
+	Mode                string          `json:"mode"`
+	FileConfig          GameFileConfig  `json:"fileConfig"`
+	URLConfig           json.RawMessage `json:"urlConfig"`
+	ScriptConfig        json.RawMessage `json:"scriptConfig"`
+	UseMagpie           bool            `json:"useMagpie"`
+	UseLocaleEmulator   bool            `json:"useLocaleEmulator"`
+	RunInLocaleEmulator bool            `json:"runInLocaleEmulator"`
 }
 
 type GameFileConfig struct {
-	Path string `json:"path"`
+	Path        string   `json:"path"`
+	Args        []string `json:"args"`
+	MonitorMode string   `json:"monitorMode"`
+	MonitorPath string   `json:"monitorPath"`
 }
 
 func LoadExportData(rootDir string) (*ExportData, error) {

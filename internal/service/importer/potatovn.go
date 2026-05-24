@@ -79,6 +79,7 @@ func (p *PotatoVNImporter) Import(zipPath string, skipNoPath bool) (ImportResult
 		if err := addImportedGame(p.deps, vo.GameMetadataFromWebVO{
 			Source: game.SourceType,
 			Game:   game,
+			Tags:   tagsFromNames(galgame.Tags.Value),
 		}); err != nil {
 			applog.LogErrorf(p.deps.Ctx, "ImportFromPotatoVN: failed to add game %s: %v", gameName, err)
 			result.Failed++
@@ -177,16 +178,21 @@ func (p *PotatoVNImporter) readGalgamesFromZip(zipPath string) ([]potatovn.Galga
 func (p *PotatoVNImporter) convertToGame(galgame potatovn.Galgame, tempDir string) (models.Game, []models.PlaySession) {
 	gameID := uuid.New().String()
 	game := models.Game{
-		ID:         gameID,
-		Name:       galgame.GetDisplayName(),
-		Company:    galgame.Developer.Value,
-		Summary:    galgame.Description.Value,
-		Path:       galgame.GetExePath(),
-		SavePath:   galgame.GetSavePath(),
-		SourceType: mapPotatoVNRssTypeToSourceType(galgame.RssType),
-		SourceID:   galgame.GetSourceID(),
-		CreatedAt:  galgame.AddTime.ToTime(),
-		CachedAt:   time.Now(),
+		ID:                gameID,
+		Name:              galgame.GetDisplayName(),
+		Company:           galgame.Developer.Value,
+		Summary:           galgame.Description.Value,
+		Rating:            galgame.Rating.Value,
+		ReleaseDate:       formatPotatoVNDate(galgame.ReleaseDate.Value),
+		Path:              galgame.GetExePath(),
+		SavePath:          galgame.GetSavePath(),
+		ProcessName:       galgame.GetProcessName(),
+		SourceType:        mapPotatoVNRssTypeToSourceType(galgame.RssType),
+		SourceID:          galgame.GetSourceID(),
+		CreatedAt:         galgame.AddTime.ToTime(),
+		CachedAt:          time.Now(),
+		UseLocaleEmulator: galgame.RunInLocaleEmulator,
+		UseMagpie:         galgame.EnableMagpie,
 	}
 
 	if galgame.ImagePath.Value != "" && galgame.ImagePath.Value != potatovn.DefaultImagePath {
@@ -213,6 +219,14 @@ func (p *PotatoVNImporter) convertToGame(galgame potatovn.Galgame, tempDir strin
 	}
 
 	return game, sessions
+}
+
+func formatPotatoVNDate(raw potatovn.FlexibleTime) string {
+	releaseDate := raw.ToTime()
+	if releaseDate.IsZero() {
+		return ""
+	}
+	return releaseDate.Format("2006-01-02")
 }
 
 func mapPotatoVNRssTypeToSourceType(rssType potatovn.RssType) enums.SourceType {

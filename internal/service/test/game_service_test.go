@@ -120,6 +120,54 @@ func TestGameService_GetGameByID(t *testing.T) {
 	})
 }
 
+func TestGameService_AddGameFromWebMetadataPersistsLaunchFields(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	gameService := service.NewGameService()
+	gameService.Init(context.Background(), db, &appconf.AppConfig{})
+
+	game := models.Game{
+		ID:                "launch-fields-game",
+		Name:              "Launch Fields Game",
+		Path:              `D:\Games\launch\game.exe`,
+		SavePath:          `D:\Saves\launch`,
+		ProcessName:       "actual.exe",
+		ReleaseDate:       "2025-02-03",
+		UseLocaleEmulator: true,
+		UseMagpie:         true,
+		SourceType:        enums.Local,
+	}
+
+	if err := addGameViaMetadata(gameService, game); err != nil {
+		t.Fatalf("AddGameFromWebMetadata failed: %v", err)
+	}
+
+	saved, err := gameService.GetGameByID(game.ID)
+	if err != nil {
+		t.Fatalf("GetGameByID failed: %v", err)
+	}
+
+	if saved.Path != game.Path {
+		t.Fatalf("expected path %q, got %q", game.Path, saved.Path)
+	}
+	if saved.SavePath != game.SavePath {
+		t.Fatalf("expected save path %q, got %q", game.SavePath, saved.SavePath)
+	}
+	if saved.ProcessName != game.ProcessName {
+		t.Fatalf("expected process name %q, got %q", game.ProcessName, saved.ProcessName)
+	}
+	if saved.ReleaseDate != game.ReleaseDate {
+		t.Fatalf("expected release date %q, got %q", game.ReleaseDate, saved.ReleaseDate)
+	}
+	if !saved.UseLocaleEmulator {
+		t.Fatal("expected Locale Emulator flag to be persisted")
+	}
+	if !saved.UseMagpie {
+		t.Fatal("expected Magpie flag to be persisted")
+	}
+}
+
 func TestGameService_GetGames(t *testing.T) {
 	db, cleanup := setupTestDB(t)
 	defer cleanup()

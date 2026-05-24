@@ -174,7 +174,15 @@ func (g *Galgame) GetDisplayName() string {
 // GetExePath 获取可执行文件路径
 func (g *Galgame) GetExePath() string {
 	if g.ExePath != nil {
-		return *g.ExePath
+		return strings.TrimSpace(*g.ExePath)
+	}
+	return ""
+}
+
+// GetProcessName 获取手动指定的实际监控进程名
+func (g *Galgame) GetProcessName() string {
+	if g.ProcessName != nil {
+		return strings.TrimSpace(*g.ProcessName)
 	}
 	return ""
 }
