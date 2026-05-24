@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"lunabox/internal/applog"
+	"lunabox/internal/common/enums"
 	"lunabox/internal/common/vo"
 	"lunabox/internal/service"
 	"strings"
@@ -100,8 +101,8 @@ func resolveGame(w io.Writer, app *CoreApp, query string) (gameID string, gameNa
 	resp, err := app.GameService.GetGames(vo.GameListRequest{
 		Limit:       50,
 		SearchQuery: query,
-		SortBy:      "name",
-		SortOrder:   "asc",
+		SortBy:      enums.GameListSortByName,
+		SortOrder:   enums.SortOrderAsc,
 	})
 	if err != nil {
 		return "", "", fmt.Errorf("failed to get games: %w", err)

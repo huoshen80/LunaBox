@@ -33,46 +33,62 @@ func normalizeGameListRequest(req vo.GameListRequest) vo.GameListRequest {
 		req.Offset = 0
 	}
 	req.SearchQuery = strings.TrimSpace(req.SearchQuery)
-	req.Status = strings.TrimSpace(req.Status)
+	req.Status = normalizeGameListStatus(req.Status)
 	req.SortBy = normalizeGameListSortBy(req.SortBy)
 	req.SortOrder = normalizeGameListSortOrder(req.SortOrder)
 	req.Tags = utils.UniqueNonEmptyStrings(req.Tags)
 	return req
 }
 
-func normalizeGameListSortBy(sortBy string) string {
-	switch strings.TrimSpace(sortBy) {
-	case "name", "last_played_at", "created_at", "rating", "release_date":
-		return strings.TrimSpace(sortBy)
+func normalizeGameListStatus(status *enums2.GameStatus) *enums2.GameStatus {
+	if status == nil {
+		return nil
+	}
+	switch *status {
+	case enums2.StatusNotStarted, enums2.StatusPlaying, enums2.StatusCompleted, enums2.StatusOnHold:
+		return status
 	default:
-		return "created_at"
+		return nil
 	}
 }
 
-func normalizeGameListSortOrder(sortOrder string) string {
-	if strings.EqualFold(strings.TrimSpace(sortOrder), "asc") {
-		return "asc"
+func normalizeGameListSortBy(sortBy enums2.GameListSortBy) enums2.GameListSortBy {
+	switch sortBy {
+	case enums2.GameListSortByName,
+		enums2.GameListSortByLastPlayedAt,
+		enums2.GameListSortByCreatedAt,
+		enums2.GameListSortByRating,
+		enums2.GameListSortByReleaseDate:
+		return sortBy
+	default:
+		return enums2.GameListSortByCreatedAt
 	}
-	return "desc"
 }
 
-func gameListOrderClause(sortBy string, sortOrder string) string {
+func normalizeGameListSortOrder(sortOrder enums2.SortOrder) enums2.SortOrder {
+	if sortOrder == enums2.SortOrderAsc {
+		return enums2.SortOrderAsc
+	}
+	return enums2.SortOrderDesc
+}
+
+func gameListOrderClause(sortBy enums2.GameListSortBy, sortOrder enums2.SortOrder) string {
 	direction := "DESC"
-	if sortOrder == "asc" {
+	if sortOrder == enums2.SortOrderAsc {
 		direction = "ASC"
 	}
 
 	switch sortBy {
-	case "name":
+	case enums2.GameListSortByName:
 		return fmt.Sprintf("LOWER(COALESCE(g.name, '')) %s, g.created_at DESC, g.id ASC", direction)
-	case "last_played_at":
+	case enums2.GameListSortByLastPlayedAt:
 		if direction == "ASC" {
 			return "latest.last_played_at IS NULL ASC, latest.last_played_at ASC, g.created_at DESC, g.id ASC"
 		}
 		return "latest.last_played_at IS NULL ASC, latest.last_played_at DESC, g.created_at DESC, g.id ASC"
-	case "rating":
+	case enums2.GameListSortByRating:
 		return fmt.Sprintf("COALESCE(g.rating, 0) %s, g.created_at DESC, g.id ASC", direction)
-	case "release_date":
+	case enums2.GameListSortByReleaseDate:
 		return fmt.Sprintf("COALESCE(g.release_date, '') %s, g.created_at DESC, g.id ASC", direction)
 	default:
 		return fmt.Sprintf("g.created_at %s, g.id ASC", direction)
@@ -101,9 +117,9 @@ func queryGameList(ctx context.Context, db *sql.DB, req vo.GameListRequest, scop
 		needle := "%" + strings.ToLower(req.SearchQuery) + "%"
 		args = append(args, needle, needle)
 	}
-	if req.Status != "" {
+	if req.Status != nil {
 		whereParts = append(whereParts, "COALESCE(g.status, 'not_started') = ?")
-		args = append(args, req.Status)
+		args = append(args, string(*req.Status))
 	}
 	if len(req.Tags) > 0 {
 		placeholders := utils.BuildPlaceholders(len(req.Tags))

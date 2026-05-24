@@ -342,8 +342,8 @@ func (s *GameService) listAllGamesInternal() ([]models.Game, error) {
 	var all []models.Game
 	req := vo.GameListRequest{
 		Limit:     maxGameListLimit,
-		SortBy:    "created_at",
-		SortOrder: "desc",
+		SortBy:    enums2.GameListSortByCreatedAt,
+		SortOrder: enums2.SortOrderDesc,
 	}
 	for {
 		resp, err := queryGameList(s.ctx, s.db, req, gameListScope{})

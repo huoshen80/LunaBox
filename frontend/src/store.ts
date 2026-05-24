@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { appconf, models, vo } from "../wailsjs/go/models";
 
+import { enums } from "../wailsjs/go/models";
 import {
   GetAppConfig,
   UpdateAppConfig,
@@ -200,10 +201,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         limit: 120,
         offset: 0,
         search_query: "",
-        status: "",
         tags: [],
-        sort_by: "created_at",
-        sort_order: "desc",
+        sort_by: enums.GameListSortBy.CREATED_AT,
+        sort_order: enums.SortOrder.DESC,
         ...request,
       });
       set({ games: result?.games || [] });

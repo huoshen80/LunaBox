@@ -1,8 +1,10 @@
 import type { models, vo } from "../../wailsjs/go/models";
+import type { GameStatusFilter } from "../consts/options";
 import { createRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { enums } from "../../wailsjs/go/models";
 import {
   AddGameToCategory,
   GetCategoryByID,
@@ -21,22 +23,15 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useTagGameFilter } from "../hooks/useTagGameFilter";
 import { Route as rootRoute } from "./__root";
 
-type CategorySortBy
-  = | "name"
-    | "last_played_at"
-    | "created_at"
-    | "rating"
-    | "release_date";
-
 const CATEGORY_STORAGE_KEY = "category";
 const PAGE_SIZE = 120;
 const CANDIDATE_PAGE_SIZE = 80;
-const CATEGORY_SORT_BY_VALUES = new Set<CategorySortBy>([
-  "name",
-  "last_played_at",
-  "created_at",
-  "rating",
-  "release_date",
+const CATEGORY_SORT_BY_VALUES = new Set<enums.GameListSortBy>([
+  enums.GameListSortBy.NAME,
+  enums.GameListSortBy.LAST_PLAYED_AT,
+  enums.GameListSortBy.CREATED_AT,
+  enums.GameListSortBy.RATING,
+  enums.GameListSortBy.RELEASE_DATE,
 ]);
 const CATEGORY_STATUS_VALUES = new Set(
   statusOptions.map(option => option.value),
@@ -53,18 +48,19 @@ function readStoredCategorySortBy() {
   const savedSortBy = readStoredValue(`${CATEGORY_STORAGE_KEY}_sortBy`);
   if (
     savedSortBy
-    && CATEGORY_SORT_BY_VALUES.has(savedSortBy as CategorySortBy)
+    && CATEGORY_SORT_BY_VALUES.has(savedSortBy as enums.GameListSortBy)
   ) {
-    return savedSortBy as CategorySortBy;
+    return savedSortBy as enums.GameListSortBy;
   }
-  return "created_at";
+  return enums.GameListSortBy.CREATED_AT;
 }
 
 function readStoredCategorySortOrder() {
   const savedSortOrder = readStoredValue(`${CATEGORY_STORAGE_KEY}_sortOrder`);
-  return savedSortOrder === "asc" || savedSortOrder === "desc"
-    ? savedSortOrder
-    : "desc";
+  return savedSortOrder === enums.SortOrder.ASC
+    || savedSortOrder === enums.SortOrder.DESC
+    ? (savedSortOrder as enums.SortOrder)
+    : enums.SortOrder.DESC;
 }
 
 function readStoredCategorySearchQuery() {
@@ -74,7 +70,7 @@ function readStoredCategorySearchQuery() {
 function readStoredCategoryStatusFilter() {
   const savedStatusFilter = readStoredValue(
     `${CATEGORY_STORAGE_KEY}_statusFilter`,
-  );
+  ) as GameStatusFilter | null;
   return savedStatusFilter && CATEGORY_STATUS_VALUES.has(savedStatusFilter)
     ? savedStatusFilter
     : "";
@@ -107,13 +103,13 @@ function CategoryDetailPage() {
   const [searchQuery, setSearchQuery] = useState(() =>
     readStoredCategorySearchQuery(),
   );
-  const [sortBy, setSortBy] = useState<CategorySortBy>(() =>
+  const [sortBy, setSortBy] = useState<enums.GameListSortBy>(() =>
     readStoredCategorySortBy(),
   );
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() =>
+  const [sortOrder, setSortOrder] = useState<enums.SortOrder>(() =>
     readStoredCategorySortOrder(),
   );
-  const [statusFilter, setStatusFilter] = useState<string>(() =>
+  const [statusFilter, setStatusFilter] = useState<GameStatusFilter>(() =>
     readStoredCategoryStatusFilter(),
   );
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 250);
@@ -160,7 +156,7 @@ function CategoryDetailPage() {
   const queryParams = useMemo(
     () => ({
       search_query: debouncedSearchQuery.trim(),
-      status: statusFilter,
+      ...(statusFilter ? { status: statusFilter } : {}),
       tags: selectedTags,
       sort_by: sortBy,
       sort_order: sortOrder,
@@ -185,7 +181,7 @@ function CategoryDetailPage() {
           limit: PAGE_SIZE,
           offset,
           ...queryParams,
-        });
+        } as vo.CategoryGameListRequest);
         if (requestId !== requestIdRef.current) {
           return;
         }
@@ -448,7 +444,7 @@ function CategoryDetailPage() {
           onSearchChange={setSearchQuery}
           searchPlaceholder={t("library.searchPlaceholder")}
           sortBy={sortBy}
-          onSortByChange={val => setSortBy(val as CategorySortBy)}
+          onSortByChange={val => setSortBy(val as enums.GameListSortBy)}
           sortOptions={sortOptions.map(opt => ({
             ...opt,
             label: t(opt.label),

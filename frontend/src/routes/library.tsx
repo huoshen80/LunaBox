@@ -1,5 +1,6 @@
 import type { models, vo } from "../../wailsjs/go/models";
 import type { ImportSource } from "../components/modal/GameImportModal";
+import type { GameStatusFilter } from "../consts/options";
 import { createRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -34,21 +35,14 @@ interface LibrarySearch {
   searchQuery?: string;
 }
 
-type LibrarySortBy
-  = | "name"
-    | "last_played_at"
-    | "created_at"
-    | "rating"
-    | "release_date";
-
 const LIBRARY_STORAGE_KEY = "library";
 const PAGE_SIZE = 120;
-const LIBRARY_SORT_BY_VALUES = new Set<LibrarySortBy>([
-  "name",
-  "last_played_at",
-  "created_at",
-  "rating",
-  "release_date",
+const LIBRARY_SORT_BY_VALUES = new Set<enums.GameListSortBy>([
+  enums.GameListSortBy.NAME,
+  enums.GameListSortBy.LAST_PLAYED_AT,
+  enums.GameListSortBy.CREATED_AT,
+  enums.GameListSortBy.RATING,
+  enums.GameListSortBy.RELEASE_DATE,
 ]);
 const LIBRARY_STATUS_VALUES = new Set(
   statusOptions.map(option => option.value),
@@ -63,17 +57,21 @@ function readStoredValue(key: string) {
 
 function readStoredLibrarySortBy() {
   const savedSortBy = readStoredValue(`${LIBRARY_STORAGE_KEY}_sortBy`);
-  if (savedSortBy && LIBRARY_SORT_BY_VALUES.has(savedSortBy as LibrarySortBy)) {
-    return savedSortBy as LibrarySortBy;
+  if (
+    savedSortBy
+    && LIBRARY_SORT_BY_VALUES.has(savedSortBy as enums.GameListSortBy)
+  ) {
+    return savedSortBy as enums.GameListSortBy;
   }
-  return "created_at";
+  return enums.GameListSortBy.CREATED_AT;
 }
 
 function readStoredLibrarySortOrder() {
   const savedSortOrder = readStoredValue(`${LIBRARY_STORAGE_KEY}_sortOrder`);
-  return savedSortOrder === "asc" || savedSortOrder === "desc"
-    ? savedSortOrder
-    : "desc";
+  return savedSortOrder === enums.SortOrder.ASC
+    || savedSortOrder === enums.SortOrder.DESC
+    ? (savedSortOrder as enums.SortOrder)
+    : enums.SortOrder.DESC;
 }
 
 function readStoredLibrarySearchQuery() {
@@ -83,7 +81,7 @@ function readStoredLibrarySearchQuery() {
 function readStoredLibraryStatusFilter() {
   const savedStatusFilter = readStoredValue(
     `${LIBRARY_STORAGE_KEY}_statusFilter`,
-  );
+  ) as GameStatusFilter | null;
   return savedStatusFilter && LIBRARY_STATUS_VALUES.has(savedStatusFilter)
     ? savedStatusFilter
     : "";
@@ -119,13 +117,13 @@ function LibraryPage() {
   const [searchQuery, setSearchQuery] = useState(
     () => routeSearchQuery?.trim() || readStoredLibrarySearchQuery(),
   );
-  const [sortBy, setSortBy] = useState<LibrarySortBy>(() =>
+  const [sortBy, setSortBy] = useState<enums.GameListSortBy>(() =>
     readStoredLibrarySortBy(),
   );
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() =>
+  const [sortOrder, setSortOrder] = useState<enums.SortOrder>(() =>
     readStoredLibrarySortOrder(),
   );
-  const [statusFilter, setStatusFilter] = useState<string>(() =>
+  const [statusFilter, setStatusFilter] = useState<GameStatusFilter>(() =>
     readStoredLibraryStatusFilter(),
   );
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 250);
@@ -224,7 +222,7 @@ function LibraryPage() {
   const queryParams = useMemo(
     () => ({
       search_query: debouncedSearchQuery.trim(),
-      status: statusFilter,
+      ...(statusFilter ? { status: statusFilter } : {}),
       tags: selectedTags,
       sort_by: sortBy,
       sort_order: sortOrder,
@@ -248,7 +246,7 @@ function LibraryPage() {
           limit: PAGE_SIZE,
           offset,
           ...queryParams,
-        });
+        } as vo.GameListRequest);
         if (requestId !== requestIdRef.current) {
           return;
         }
@@ -475,7 +473,7 @@ function LibraryPage() {
         searchPlaceholder={t("library.searchPlaceholder")}
         disableStoredSearchQuery={Boolean(routeSearchQuery?.trim())}
         sortBy={sortBy}
-        onSortByChange={val => setSortBy(val as LibrarySortBy)}
+        onSortByChange={val => setSortBy(val as enums.GameListSortBy)}
         sortOptions={sortOptions.map(opt => ({
           ...opt,
           label: t(opt.label),

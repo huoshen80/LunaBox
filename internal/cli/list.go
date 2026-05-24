@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"lunabox/internal/applog"
+	"lunabox/internal/common/enums"
 	"lunabox/internal/common/vo"
 	"strings"
 
@@ -20,8 +21,8 @@ func newListCmd(app *CoreApp) *cobra.Command {
 			applog.LogInfof(app.Ctx, "Getting games from database...")
 			resp, err := app.GameService.GetGames(vo.GameListRequest{
 				Limit:     240,
-				SortBy:    "created_at",
-				SortOrder: "desc",
+				SortBy:    enums.GameListSortByCreatedAt,
+				SortOrder: enums.SortOrderDesc,
 			})
 			if err != nil {
 				applog.LogErrorf(app.Ctx, "Failed to get games: %v", err)
@@ -58,14 +59,12 @@ func newListCmd(app *CoreApp) *cobra.Command {
 				// 显示状态图标
 				statusIcon := "·"
 				switch game.Status {
-				case "playing":
+				case enums.StatusPlaying:
 					statusIcon = "▶"
-				case "completed":
+				case enums.StatusCompleted:
 					statusIcon = "✓"
-				case "on_hold":
+				case enums.StatusOnHold:
 					statusIcon = "○"
-				case "dropped":
-					statusIcon = "✗"
 				}
 
 				// Calculate available width for name

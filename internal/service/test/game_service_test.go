@@ -242,8 +242,8 @@ func TestGameService_GetGames(t *testing.T) {
 		resp, err := newService.GetGames(vo.GameListRequest{
 			Limit:       1,
 			SearchQuery: "alpha",
-			SortBy:      "name",
-			SortOrder:   "asc",
+			SortBy:      enums.GameListSortByName,
+			SortOrder:   enums.SortOrderAsc,
 		})
 		if err != nil {
 			t.Fatalf("分页查询失败: %v", err)

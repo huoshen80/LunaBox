@@ -1,19 +1,25 @@
 import { enums } from "../../wailsjs/go/models";
 
-export const statusOptions = [
-  { label: "common.allStatus", value: "" },
-  { label: "common.notStarted", value: enums.GameStatus.NOT_STARTED },
-  { label: "common.playing", value: enums.GameStatus.PLAYING },
-  { label: "common.completed", value: enums.GameStatus.COMPLETED },
-  { label: "common.onHold", value: enums.GameStatus.ON_HOLD },
-];
+export type GameStatusFilter = enums.GameStatus | "";
 
-export const sortOptions = [
-  { label: "common.name", value: "name" },
-  { label: "common.lastPlayedAt", value: "last_played_at" },
-  { label: "common.createdAt", value: "created_at" },
-  { label: "common.rating", value: "rating" },
-  { label: "common.releaseDate", value: "release_date" },
+export const statusOptions: Array<{ label: string; value: GameStatusFilter }>
+  = [
+    { label: "common.allStatus", value: "" },
+    { label: "common.notStarted", value: enums.GameStatus.NOT_STARTED },
+    { label: "common.playing", value: enums.GameStatus.PLAYING },
+    { label: "common.completed", value: enums.GameStatus.COMPLETED },
+    { label: "common.onHold", value: enums.GameStatus.ON_HOLD },
+  ];
+
+export const sortOptions: Array<{
+  label: string;
+  value: enums.GameListSortBy;
+}> = [
+  { label: "common.name", value: enums.GameListSortBy.NAME },
+  { label: "common.lastPlayedAt", value: enums.GameListSortBy.LAST_PLAYED_AT },
+  { label: "common.createdAt", value: enums.GameListSortBy.CREATED_AT },
+  { label: "common.rating", value: enums.GameListSortBy.RATING },
+  { label: "common.releaseDate", value: enums.GameListSortBy.RELEASE_DATE },
 ];
 
 export const APP_ZOOM_LEVELS = [0.8, 0.9, 1, 1.1, 1.25, 1.5] as const;

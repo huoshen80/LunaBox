@@ -404,6 +404,8 @@ func main() {
 		enums.AllPeriodTypes,
 		enums.Prompts,
 		enums.AllGameStatuses,
+		enums.AllGameListSortByTypes,
+		enums.AllSortOrderTypes,
 	}
 
 	// 如果有待安装 URL，解析并暂存到 downloadService

@@ -1,6 +1,7 @@
 import { Menu, MenuButton, MenuItems } from "@headlessui/react";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { enums } from "../../../wailsjs/go/models";
 
 interface SortOption {
   label: string;
@@ -9,7 +10,7 @@ interface SortOption {
 
 interface FilterOption {
   label: string;
-  value: string;
+  value: enums.GameStatus | "";
 }
 
 interface FilterBarProps {
@@ -20,11 +21,11 @@ interface FilterBarProps {
   sortBy: string;
   onSortByChange: (value: string) => void;
   sortOptions: SortOption[];
-  sortOrder: "asc" | "desc";
-  onSortOrderChange: (order: "asc" | "desc") => void;
+  sortOrder: enums.SortOrder;
+  onSortOrderChange: (order: enums.SortOrder) => void;
   // 状态筛选
-  statusFilter?: string;
-  onStatusFilterChange?: (value: string) => void;
+  statusFilter?: enums.GameStatus | "";
+  onStatusFilterChange?: (value: enums.GameStatus | "") => void;
   statusOptions?: FilterOption[];
   // 额外筛选内容（例如 tag 筛选）
   filterMenuExtra?: React.ReactNode;
@@ -97,8 +98,11 @@ export function FilterBar({
         onSortByChange(savedSortBy);
       }
 
-      if (savedSortOrder === "asc" || savedSortOrder === "desc") {
-        onSortOrderChange(savedSortOrder);
+      if (
+        savedSortOrder === enums.SortOrder.ASC
+        || savedSortOrder === enums.SortOrder.DESC
+      ) {
+        onSortOrderChange(savedSortOrder as enums.SortOrder);
       }
 
       // 恢复搜索查询
@@ -110,7 +114,7 @@ export function FilterBar({
       if (savedStatusFilter && statusOptions && onStatusFilterChange) {
         // 验证保存的 statusFilter 是否在 statusOptions 中
         if (statusOptions.some(opt => opt.value === savedStatusFilter)) {
-          onStatusFilterChange(savedStatusFilter);
+          onStatusFilterChange(savedStatusFilter as enums.GameStatus);
         }
       }
 
@@ -138,7 +142,7 @@ export function FilterBar({
   };
 
   // 处理状态筛选变更
-  const handleStatusFilterChange = (value: string) => {
+  const handleStatusFilterChange = (value: enums.GameStatus | "") => {
     if (onStatusFilterChange) {
       onStatusFilterChange(value);
       if (storageKey) {
@@ -161,7 +165,7 @@ export function FilterBar({
   };
 
   // 处理排序顺序变更
-  const handleSortOrderChange = (order: "asc" | "desc") => {
+  const handleSortOrderChange = (order: enums.SortOrder) => {
     onSortOrderChange(order);
     if (storageKey) {
       localStorage.setItem(`${storageKey}_sortOrder`, order);
@@ -314,10 +318,10 @@ export function FilterBar({
               <div className="grid grid-cols-2 gap-1.5">
                 <button
                   type="button"
-                  onClick={() => handleSortOrderChange("asc")}
+                  onClick={() => handleSortOrderChange(enums.SortOrder.ASC)}
                   className={`flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors
                     ${
-    sortOrder === "asc"
+    sortOrder === enums.SortOrder.ASC
       ? "bg-brand-100 text-brand-700 dark:bg-brand-700 dark:text-brand-200"
       : "bg-brand-50 text-brand-500 hover:bg-brand-100 dark:bg-brand-900/50 dark:text-brand-400 dark:hover:bg-brand-700/70"
     }`}
@@ -327,10 +331,10 @@ export function FilterBar({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSortOrderChange("desc")}
+                  onClick={() => handleSortOrderChange(enums.SortOrder.DESC)}
                   className={`flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors
                     ${
-    sortOrder === "desc"
+    sortOrder === enums.SortOrder.DESC
       ? "bg-brand-100 text-brand-700 dark:bg-brand-700 dark:text-brand-200"
       : "bg-brand-50 text-brand-500 hover:bg-brand-100 dark:bg-brand-900/50 dark:text-brand-400 dark:hover:bg-brand-700/70"
     }`}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"lunabox/internal/appconf"
 	"lunabox/internal/applog"
+	"lunabox/internal/common/enums"
 	"lunabox/internal/common/vo"
 	"lunabox/internal/models"
 	"lunabox/internal/utils"
@@ -488,8 +489,8 @@ func (s *CategoryService) SearchCategoryGameCandidates(req vo.CategoryGameCandid
 		Limit:       req.Limit,
 		Offset:      req.Offset,
 		SearchQuery: req.SearchQuery,
-		SortBy:      "name",
-		SortOrder:   "asc",
+		SortBy:      enums.GameListSortByName,
+		SortOrder:   enums.SortOrderAsc,
 	}, gameListScope{
 		whereClause: `NOT EXISTS (
 			SELECT 1

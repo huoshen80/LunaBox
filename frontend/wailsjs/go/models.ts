@@ -171,6 +171,10 @@ export namespace appconf {
 
 export namespace enums {
 	
+	export enum SortOrder {
+	    ASC = "asc",
+	    DESC = "desc",
+	}
 	export enum SourceType {
 	    LOCAL = "local",
 	    BANGUMI = "bangumi",
@@ -194,6 +198,13 @@ export namespace enums {
 	    PLAYING = "playing",
 	    COMPLETED = "completed",
 	    ON_HOLD = "on_hold",
+	}
+	export enum GameListSortBy {
+	    NAME = "name",
+	    LAST_PLAYED_AT = "last_played_at",
+	    CREATED_AT = "created_at",
+	    RATING = "rating",
+	    RELEASE_DATE = "release_date",
 	}
 
 }
@@ -936,10 +947,10 @@ export namespace vo {
 	    limit: number;
 	    offset: number;
 	    search_query: string;
-	    status: string;
+	    status?: enums.GameStatus;
 	    tags: string[];
-	    sort_by: string;
-	    sort_order: string;
+	    sort_by: enums.GameListSortBy;
+	    sort_order: enums.SortOrder;
 	
 	    static createFrom(source: any = {}) {
 	        return new CategoryGameListRequest(source);
@@ -1235,10 +1246,10 @@ export namespace vo {
 	    limit: number;
 	    offset: number;
 	    search_query: string;
-	    status: string;
+	    status?: enums.GameStatus;
 	    tags: string[];
-	    sort_by: string;
-	    sort_order: string;
+	    sort_by: enums.GameListSortBy;
+	    sort_order: enums.SortOrder;
 	
 	    static createFrom(source: any = {}) {
 	        return new GameListRequest(source);

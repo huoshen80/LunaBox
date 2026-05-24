@@ -50,13 +50,13 @@ type MetadataRequest struct {
 }
 
 type GameListRequest struct {
-	Limit       int      `json:"limit"`
-	Offset      int      `json:"offset"`
-	SearchQuery string   `json:"search_query"`
-	Status      string   `json:"status"`
-	Tags        []string `json:"tags"`
-	SortBy      string   `json:"sort_by"`
-	SortOrder   string   `json:"sort_order"`
+	Limit       int                  `json:"limit"`
+	Offset      int                  `json:"offset"`
+	SearchQuery string               `json:"search_query"`
+	Status      *enums.GameStatus    `json:"status,omitempty"`
+	Tags        []string             `json:"tags"`
+	SortBy      enums.GameListSortBy `json:"sort_by"`
+	SortOrder   enums.SortOrder      `json:"sort_order"`
 }
 
 type CategoryGameListRequest struct {

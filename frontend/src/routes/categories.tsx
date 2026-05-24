@@ -3,6 +3,7 @@ import { createRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { enums } from "../../wailsjs/go/models";
 import {
   AddCategory,
   DeleteCategories,
@@ -47,9 +48,10 @@ function readStoredCategoriesSortBy() {
 
 function readStoredCategoriesSortOrder() {
   const savedSortOrder = readStoredValue(`${CATEGORIES_STORAGE_KEY}_sortOrder`);
-  return savedSortOrder === "asc" || savedSortOrder === "desc"
-    ? savedSortOrder
-    : "asc";
+  return savedSortOrder === enums.SortOrder.ASC
+    || savedSortOrder === enums.SortOrder.DESC
+    ? (savedSortOrder as enums.SortOrder)
+    : enums.SortOrder.ASC;
 }
 
 function readStoredCategoriesSearchQuery() {
@@ -80,7 +82,7 @@ function CategoriesPage() {
   const [sortBy, setSortBy] = useState<CategoriesSortBy>(() =>
     readStoredCategoriesSortBy(),
   );
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(() =>
+  const [sortOrder, setSortOrder] = useState<enums.SortOrder>(() =>
     readStoredCategoriesSortOrder(),
   );
   const [batchMode, setBatchMode] = useState(false);
@@ -210,7 +212,7 @@ function CategoriesPage() {
               .localeCompare((b.updated_at || "").toString());
             break;
         }
-        return sortOrder === "asc" ? comparison : -comparison;
+        return sortOrder === enums.SortOrder.ASC ? comparison : -comparison;
       });
   }, [categories, searchQuery, sortBy, sortOrder]);
 
