@@ -11,6 +11,7 @@ export namespace appconf {
 	    bangumi_status_push_enabled?: boolean;
 	    vndb_access_token?: string;
 	    metadata_sources?: string[];
+	    allow_duplicate_metadata_import: boolean;
 	    theme: string;
 	    language: string;
 	    sidebar_open: boolean;
@@ -96,6 +97,7 @@ export namespace appconf {
 	        this.bangumi_status_push_enabled = source["bangumi_status_push_enabled"];
 	        this.vndb_access_token = source["vndb_access_token"];
 	        this.metadata_sources = source["metadata_sources"];
+	        this.allow_duplicate_metadata_import = source["allow_duplicate_metadata_import"];
 	        this.theme = source["theme"];
 	        this.language = source["language"];
 	        this.sidebar_open = source["sidebar_open"];

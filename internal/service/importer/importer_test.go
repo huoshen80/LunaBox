@@ -87,6 +87,22 @@ func TestAddImportedItemsUsesBatchDependency(t *testing.T) {
 	}
 }
 
+func TestPreviewExistsChecksSourceDuplicate(t *testing.T) {
+	idx := newExistingPreviewIndex([]models.Game{
+		{
+			ID:         "existing-source",
+			Name:       "Existing Source",
+			Path:       `D:\Games\Existing\game.exe`,
+			SourceType: enums.VNDB,
+			SourceID:   "v123",
+		},
+	})
+
+	if !previewExists(idx, "Existing Source Volume 2", `D:\Games\Volume2\game.exe`, string(enums.VNDB), "v123") {
+		t.Fatal("expected preview to warn when metadata source/id already exists")
+	}
+}
+
 func TestVniteConvertToGameImportsLaunchFields(t *testing.T) {
 	gameDoc := vnite.GameDoc{
 		Metadata: vnite.GameMetadata{

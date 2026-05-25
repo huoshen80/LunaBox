@@ -694,6 +694,8 @@
         "ymgal": "Please experience this wonderful literary genre",
         "steam": "Suitable for game information released on the Steam platform"
       },
+      "allowDuplicateMetadataImport": "Allow games with the same metadata ID",
+      "allowDuplicateMetadataImportHint": "When enabled, batch and external imports will not skip games only because source_type + source_id already exists. Path duplicates are still blocked.",
       "refreshTitle": "Refresh Metadata For Entire Library",
       "refreshHint": "Bulk refresh game title, summary, company, cover, and tags using currently enabled sources.",
       "refreshButton": "Refresh All Game Metadata",

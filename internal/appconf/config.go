@@ -31,20 +31,21 @@ const DefaultMCPPort = 39200
 
 // AppConfig 应用配置结构体
 type AppConfig struct {
-	BangumiAccessToken         string   `json:"access_token,omitempty"`
-	BangumiRefreshToken        string   `json:"bangumi_refresh_token,omitempty"`
-	BangumiTokenExpiresAt      string   `json:"bangumi_token_expires_at,omitempty"`
-	BangumiAuthorizedUserID    string   `json:"bangumi_authorized_user_id,omitempty"`
-	BangumiAuthorizedUsername  string   `json:"bangumi_authorized_username,omitempty"`
-	BangumiAuthorizedAvatarURL string   `json:"bangumi_authorized_avatar_url,omitempty"`
-	BangumiAuthError           string   `json:"bangumi_auth_error,omitempty"`
-	BangumiStatusPushEnabled   *bool    `json:"bangumi_status_push_enabled,omitempty"`
-	VNDBAccessToken            string   `json:"vndb_access_token,omitempty"`
-	MetadataSources            []string `json:"metadata_sources,omitempty"` // 元数据拉取来源列表（bangumi/vndb/ymgal/steam）
-	Theme                      string   `json:"theme"`                      // light or dark
-	Language                   string   `json:"language"`                   // zh, en, etc.
-	SidebarOpen                bool     `json:"sidebar_open"`               // 侧边栏是否展开
-	CloseToTray                bool     `json:"close_to_tray"`              // 关闭时最小化到托盘
+	BangumiAccessToken           string   `json:"access_token,omitempty"`
+	BangumiRefreshToken          string   `json:"bangumi_refresh_token,omitempty"`
+	BangumiTokenExpiresAt        string   `json:"bangumi_token_expires_at,omitempty"`
+	BangumiAuthorizedUserID      string   `json:"bangumi_authorized_user_id,omitempty"`
+	BangumiAuthorizedUsername    string   `json:"bangumi_authorized_username,omitempty"`
+	BangumiAuthorizedAvatarURL   string   `json:"bangumi_authorized_avatar_url,omitempty"`
+	BangumiAuthError             string   `json:"bangumi_auth_error,omitempty"`
+	BangumiStatusPushEnabled     *bool    `json:"bangumi_status_push_enabled,omitempty"`
+	VNDBAccessToken              string   `json:"vndb_access_token,omitempty"`
+	MetadataSources              []string `json:"metadata_sources,omitempty"`      // 元数据拉取来源列表（bangumi/vndb/ymgal/steam）
+	AllowDuplicateMetadataImport bool     `json:"allow_duplicate_metadata_import"` // 批量/外部导入时允许相同 source_type + source_id
+	Theme                        string   `json:"theme"`                           // light or dark
+	Language                     string   `json:"language"`                        // zh, en, etc.
+	SidebarOpen                  bool     `json:"sidebar_open"`                    // 侧边栏是否展开
+	CloseToTray                  bool     `json:"close_to_tray"`                   // 关闭时最小化到托盘
 	// AI 配置
 	AIProvider     string `json:"ai_provider,omitempty"`      // openai, deepseek, etc.
 	AIBaseURL      string `json:"ai_base_url,omitempty"`      // API base URL
@@ -139,64 +140,65 @@ func getConfigPath() (string, error) {
 
 func LoadConfig() (*AppConfig, error) {
 	config := &AppConfig{
-		BangumiAccessToken:         "",
-		BangumiRefreshToken:        "",
-		BangumiTokenExpiresAt:      "",
-		BangumiAuthorizedUserID:    "",
-		BangumiAuthorizedUsername:  "",
-		BangumiAuthorizedAvatarURL: "",
-		BangumiAuthError:           "",
-		BangumiStatusPushEnabled:   boolPtr(true),
-		VNDBAccessToken:            "",
-		MetadataSources:            cloneStringSlice(defaultMetadataSources),
-		Theme:                      "light",
-		Language:                   "zh-CN",
-		SidebarOpen:                true,
-		CloseToTray:                false,
-		AIProvider:                 "",
-		AIBaseURL:                  "",
-		AIAPIKey:                   "",
-		AIModel:                    "",
-		AISystemPrompt:             string(enums2.DefaultSystemPrompt),
-		MCPEnabled:                 false,
-		MCPPort:                    DefaultMCPPort,
-		CloudBackupEnabled:         false,
-		CloudBackupProvider:        "s3",
-		BackupPassword:             "",
-		BackupUserID:               "",
-		CloudSyncEnabled:           false,
-		AutoCloudSyncEnabled:       false,
-		CloudSyncIntervalSec:       60,
-		LastCloudSyncTime:          "",
-		LastCloudSyncStatus:        "idle",
-		LastCloudSyncError:         "",
-		S3Endpoint:                 "",
-		TimeZone:                   "",
-		S3Region:                   "",
-		S3Bucket:                   "",
-		S3AccessKey:                "",
-		S3SecretKey:                "",
-		CloudBackupRetention:       5,
-		OneDriveClientID:           "",
-		OneDriveRefreshToken:       "",
-		LastDBBackupTime:           "",
-		PendingDBRestore:           "",
-		LastFullBackupTime:         "",
-		PendingFullRestore:         "",
-		AutoBackupDB:               false,
-		AutoBackupGameSave:         false,
-		AutoUploadToCloud:          false,
-		LocalBackupRetention:       10,
-		LocalDBBackupRetention:     5,
-		WindowWidth:                1230,
-		WindowHeight:               800,
-		WindowZoomFactor:           1.0,
-		LaunchAtLogin:              false,
-		RecordActiveTimeOnly:       false, // 默认关闭，向后兼容
-		CheckUpdateOnStartup:       true,  // 默认开启启动时检查更新
-		UpdateCheckURL:             "",
-		LastUpdateCheck:            "",
-		SkipVersion:                "",
+		BangumiAccessToken:           "",
+		BangumiRefreshToken:          "",
+		BangumiTokenExpiresAt:        "",
+		BangumiAuthorizedUserID:      "",
+		BangumiAuthorizedUsername:    "",
+		BangumiAuthorizedAvatarURL:   "",
+		BangumiAuthError:             "",
+		BangumiStatusPushEnabled:     boolPtr(true),
+		VNDBAccessToken:              "",
+		MetadataSources:              cloneStringSlice(defaultMetadataSources),
+		AllowDuplicateMetadataImport: false,
+		Theme:                        "light",
+		Language:                     "zh-CN",
+		SidebarOpen:                  true,
+		CloseToTray:                  false,
+		AIProvider:                   "",
+		AIBaseURL:                    "",
+		AIAPIKey:                     "",
+		AIModel:                      "",
+		AISystemPrompt:               string(enums2.DefaultSystemPrompt),
+		MCPEnabled:                   false,
+		MCPPort:                      DefaultMCPPort,
+		CloudBackupEnabled:           false,
+		CloudBackupProvider:          "s3",
+		BackupPassword:               "",
+		BackupUserID:                 "",
+		CloudSyncEnabled:             false,
+		AutoCloudSyncEnabled:         false,
+		CloudSyncIntervalSec:         60,
+		LastCloudSyncTime:            "",
+		LastCloudSyncStatus:          "idle",
+		LastCloudSyncError:           "",
+		S3Endpoint:                   "",
+		TimeZone:                     "",
+		S3Region:                     "",
+		S3Bucket:                     "",
+		S3AccessKey:                  "",
+		S3SecretKey:                  "",
+		CloudBackupRetention:         5,
+		OneDriveClientID:             "",
+		OneDriveRefreshToken:         "",
+		LastDBBackupTime:             "",
+		PendingDBRestore:             "",
+		LastFullBackupTime:           "",
+		PendingFullRestore:           "",
+		AutoBackupDB:                 false,
+		AutoBackupGameSave:           false,
+		AutoUploadToCloud:            false,
+		LocalBackupRetention:         10,
+		LocalDBBackupRetention:       5,
+		WindowWidth:                  1230,
+		WindowHeight:                 800,
+		WindowZoomFactor:             1.0,
+		LaunchAtLogin:                false,
+		RecordActiveTimeOnly:         false, // 默认关闭，向后兼容
+		CheckUpdateOnStartup:         true,  // 默认开启启动时检查更新
+		UpdateCheckURL:               "",
+		LastUpdateCheck:              "",
+		SkipVersion:                  "",
 		// 背景图配置默认值
 		BackgroundImage:             "",
 		BackgroundBlur:              10,   // 默认模糊度

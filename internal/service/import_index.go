@@ -196,6 +196,10 @@ func (s *ImportService) loadImportIndex() (importIndex, error) {
 	return newImportIndex(refs), nil
 }
 
+func (s *ImportService) allowDuplicateMetadataImport() bool {
+	return s.config != nil && s.config.AllowDuplicateMetadataImport
+}
+
 func (s *ImportService) listImportGamesForImporter() ([]models.Game, error) {
 	refs, err := s.gameService.listImportGameRefs()
 	if err != nil {
@@ -260,10 +264,12 @@ func (s *ImportService) addImporterItems(items []importer.ImportItem) (importer.
 		if game.ID == "" {
 			game.ID = uuid.New().String()
 		}
-		if ref, ok := idx.findBySource(source, game.SourceID); ok {
-			result.Skipped++
-			result.SkippedNames = append(result.SkippedNames, displayName+" (元数据已存在: "+ref.Name+")")
-			continue
+		if !s.allowDuplicateMetadataImport() {
+			if ref, ok := idx.findBySource(source, game.SourceID); ok {
+				result.Skipped++
+				result.SkippedNames = append(result.SkippedNames, displayName+" (元数据已存在: "+ref.Name+")")
+				continue
+			}
 		}
 		if ref, ok := idx.findByNamePath(game.Name, item.Path); ok {
 			result.Skipped++

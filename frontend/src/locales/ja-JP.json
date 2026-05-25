@@ -694,6 +694,8 @@
         "ymgal": "この素晴らしい文芸ジャンルを感じてください",
         "steam": "Steam プラットフォームでリリースされたゲーム情報に適しています"
       },
+      "allowDuplicateMetadataImport": "同じメタデータ ID のゲームを許可",
+      "allowDuplicateMetadataImportHint": "有効にすると、一括インポートと外部インポートで source_type + source_id の重複だけではスキップしません。パス重複は引き続きブロックされます。",
       "refreshTitle": "ライブラリ全体のメタデータ更新",
       "refreshHint": "現在有効なソースで、ゲーム名・概要・メーカー・カバー・タグを一括更新します。",
       "refreshButton": "全ゲームのメタデータを更新",

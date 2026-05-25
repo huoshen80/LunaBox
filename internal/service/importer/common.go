@@ -32,11 +32,12 @@ type PreviewGame struct {
 }
 
 type Dependencies struct {
-	Ctx         context.Context
-	ListGames   func() ([]models.Game, error)
-	AddGame     func(vo.GameMetadataFromWebVO) error
-	AddItems    func([]ImportItem) (ImportResult, error)
-	AddSessions func([]models.PlaySession) error
+	Ctx                          context.Context
+	ListGames                    func() ([]models.Game, error)
+	AddGame                      func(vo.GameMetadataFromWebVO) error
+	AddItems                     func([]ImportItem) (ImportResult, error)
+	AddSessions                  func([]models.PlaySession) error
+	AllowDuplicateMetadataImport bool
 }
 
 type ImportItem struct {

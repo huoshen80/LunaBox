@@ -10,6 +10,7 @@ import (
 	"lunabox/internal/common/vo"
 	"lunabox/internal/migrations"
 	"lunabox/internal/models"
+	"lunabox/internal/service/importer"
 	"lunabox/internal/utils/metadata"
 	"path/filepath"
 	"strings"
@@ -226,7 +227,7 @@ func TestBatchImportGamesSkipsSourceDuplicateOnSubmit(t *testing.T) {
 	}
 }
 
-func TestCheckImportMetadataDuplicatesReturnsExistingGame(t *testing.T) {
+func TestBatchImportGamesAllowsSourceDuplicateWhenConfigured(t *testing.T) {
 	applog.SetMode(applog.ModeCLI)
 
 	db, err := sql.Open("duckdb", "")
@@ -239,7 +240,127 @@ func TestCheckImportMetadataDuplicatesReturnsExistingGame(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	config := &appconf.AppConfig{}
+	config := &appconf.AppConfig{AllowDuplicateMetadataImport: true}
+	gameService := NewGameService()
+	gameService.Init(ctx, db, config)
+	importService := NewImportService()
+	importService.Init(ctx, db, config, gameService)
+
+	existing := models.Game{
+		ID:         "existing-source",
+		Name:       "Existing Source",
+		Path:       `C:\Games\ExistingSource\game.exe`,
+		SourceType: enums.VNDB,
+		SourceID:   "v123",
+		CreatedAt:  time.Now(),
+		CachedAt:   time.Now(),
+	}
+	if err := gameService.AddGameFromWebMetadata(vo.GameMetadataFromWebVO{Source: enums.VNDB, Game: existing}); err != nil {
+		t.Fatalf("add existing game: %v", err)
+	}
+
+	result, err := importService.BatchImportGames([]vo.BatchImportCandidate{
+		{
+			SelectedExe: `C:\Games\DifferentPath\game.exe`,
+			SearchName:  "Existing Source Volume 2",
+			IsSelected:  true,
+			MatchedGame: &models.Game{
+				Name:       "Existing Source Volume 2",
+				SourceType: enums.VNDB,
+				SourceID:   "v123",
+			},
+			MatchSource: enums.VNDB,
+			MatchStatus: "matched",
+		},
+	})
+	if err != nil {
+		t.Fatalf("batch import: %v", err)
+	}
+	if result.Success != 1 || result.Skipped != 0 {
+		t.Fatalf("expected source duplicate to import when configured, got success=%d skipped=%d", result.Success, result.Skipped)
+	}
+
+	var count int
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(*) FROM games WHERE source_type = ? AND source_id = ?`, string(enums.VNDB), "v123").Scan(&count); err != nil {
+		t.Fatalf("count games by source: %v", err)
+	}
+	if count != 2 {
+		t.Fatalf("expected two games sharing metadata identity, got %d", count)
+	}
+}
+
+func TestImporterItemsAllowSourceDuplicateWhenConfigured(t *testing.T) {
+	applog.SetMode(applog.ModeCLI)
+
+	db, err := sql.Open("duckdb", "")
+	if err != nil {
+		t.Fatalf("open duckdb: %v", err)
+	}
+	defer db.Close()
+	if err := migrations.InitSchema(db); err != nil {
+		t.Fatalf("init schema: %v", err)
+	}
+
+	ctx := context.Background()
+	config := &appconf.AppConfig{AllowDuplicateMetadataImport: true}
+	gameService := NewGameService()
+	gameService.Init(ctx, db, config)
+	importService := NewImportService()
+	importService.Init(ctx, db, config, gameService)
+
+	if err := gameService.AddGameFromWebMetadata(vo.GameMetadataFromWebVO{
+		Source: enums.VNDB,
+		Game: models.Game{
+			ID:         "existing-source",
+			Name:       "Existing Source",
+			Path:       `C:\Games\ExistingSource\game.exe`,
+			SourceType: enums.VNDB,
+			SourceID:   "v123",
+			CreatedAt:  time.Now(),
+			CachedAt:   time.Now(),
+		},
+	}); err != nil {
+		t.Fatalf("add existing game: %v", err)
+	}
+
+	result, err := importService.addImporterItems([]importer.ImportItem{
+		{
+			DisplayName: "Existing Source Volume 2",
+			Path:        `C:\Games\ExistingSourceV2\game.exe`,
+			Source: vo.GameMetadataFromWebVO{
+				Source: enums.VNDB,
+				Game: models.Game{
+					ID:         "new-source",
+					Name:       "Existing Source Volume 2",
+					Path:       `C:\Games\ExistingSourceV2\game.exe`,
+					SourceType: enums.VNDB,
+					SourceID:   "v123",
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("add importer items: %v", err)
+	}
+	if result.Success != 1 || result.Skipped != 0 {
+		t.Fatalf("expected importer item to allow duplicate metadata, got success=%d skipped=%d", result.Success, result.Skipped)
+	}
+}
+
+func TestCheckImportMetadataDuplicatesReturnsExistingGameWhenDuplicatesAllowed(t *testing.T) {
+	applog.SetMode(applog.ModeCLI)
+
+	db, err := sql.Open("duckdb", "")
+	if err != nil {
+		t.Fatalf("open duckdb: %v", err)
+	}
+	defer db.Close()
+	if err := migrations.InitSchema(db); err != nil {
+		t.Fatalf("init schema: %v", err)
+	}
+
+	ctx := context.Background()
+	config := &appconf.AppConfig{AllowDuplicateMetadataImport: true}
 	gameService := NewGameService()
 	gameService.Init(ctx, db, config)
 	importService := NewImportService()

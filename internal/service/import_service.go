@@ -77,11 +77,12 @@ func (s *ImportService) importerDependencies() importer.Dependencies {
 	}
 
 	return importer.Dependencies{
-		Ctx:         s.ctx,
-		ListGames:   s.listImportGamesForImporter,
-		AddGame:     s.gameService.AddGameFromWebMetadata,
-		AddItems:    s.addImporterItems,
-		AddSessions: addSessions,
+		Ctx:                          s.ctx,
+		ListGames:                    s.listImportGamesForImporter,
+		AddGame:                      s.gameService.AddGameFromWebMetadata,
+		AddItems:                     s.addImporterItems,
+		AddSessions:                  addSessions,
+		AllowDuplicateMetadataImport: s.config != nil && s.config.AllowDuplicateMetadataImport,
 	}
 }
 
@@ -441,11 +442,13 @@ func (s *ImportService) BatchImportGames(candidates []vo.BatchImportCandidate) (
 		if game.SourceType == "" {
 			game.SourceType = source
 		}
-		if sourceRef, exists := idx.findBySource(source, game.SourceID); exists {
-			applog.LogWarningf(s.ctx, "BatchImportGames: source already exists for game %s, skipping: %s/%s", sourceRef.Name, source, game.SourceID)
-			result.Skipped++
-			result.SkippedNames = append(result.SkippedNames, gameName+" (元数据已存在: "+sourceRef.Name+")")
-			continue
+		if !s.allowDuplicateMetadataImport() {
+			if sourceRef, exists := idx.findBySource(source, game.SourceID); exists {
+				applog.LogWarningf(s.ctx, "BatchImportGames: source already exists for game %s, skipping: %s/%s", sourceRef.Name, source, game.SourceID)
+				result.Skipped++
+				result.SkippedNames = append(result.SkippedNames, gameName+" (元数据已存在: "+sourceRef.Name+")")
+				continue
+			}
 		}
 
 		item := importItem{
